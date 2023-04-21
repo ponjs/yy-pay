@@ -7,6 +7,7 @@ const delay = (ms: number) => new Promise<void>(reslove => setTimeout(reslove, m
 function Home() {
   const [amount, setAmount] = useState('')
   const [qrcode, setQrcode] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const check = async (token: string) => {
     const res: TResponse<CheckerData> = await fetch('/api/check', {
@@ -24,11 +25,16 @@ function Home() {
   }
 
   const handlePay = async () => {
+    if (loading) return
+
+    setLoading(true)
     const res: TResponse<PaymentData> = await fetch('/api/pay', {
       method: 'POST',
       body: JSON.stringify({ amount }),
       headers: { 'Content-Type': 'application/json' },
-    }).then(res => res.json())
+    })
+      .then(res => res.json())
+      .finally(() => setLoading(false))
 
     if (!res.data) return alert(res.msg)
 
@@ -59,7 +65,7 @@ function Home() {
             className="border border-gray-500 rounded-none outline-none ml-4 px-4 cursor-pointer"
             onClick={handlePay}
           >
-            Pay
+            {loading ? 'Loading' : 'Pay'}
           </button>
         </>
       )}
